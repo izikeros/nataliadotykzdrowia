@@ -55,9 +55,3 @@ release: minify format-check ## Create validated minified release output
 	@$(PYTHON) check.py
 	@node --check assets/js/site.js
 	@$(PYTHON) image_audit.py --max-dimension $(MAX_IMAGE_DIMENSION) --max-file-bytes $(MAX_IMAGE_BYTES) --max-total-bytes $(MAX_IMAGE_TOTAL_BYTES)
-
-deploy-dry: release ## Preview deployment to configured staging path
-	@bash ../scripts/deploy-static.sh --dry-run
-
-deploy: release ## Deploy minified output to configured staging path
-	@bash ../scripts/deploy-static.sh

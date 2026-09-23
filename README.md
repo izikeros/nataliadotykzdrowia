@@ -4,7 +4,7 @@ Static Polish-language website for Natalia Safjan / Dotyk Zdrowia, published at
 [nataliadotykzdrowia.pl](https://nataliadotykzdrowia.pl).
 
 The site has no runtime dependencies or database. `build.py` generates the
-HTML pages and copies the static assets into `dist/`.
+HTML pages and copies the static assets into `docs/`.
 
 ## Requirements
 
@@ -19,7 +19,7 @@ The build expects the source image collection at
 ## Development
 
 ```sh
-# Generate readable output in dist/
+# Generate readable output in docs/
 make build
 
 # Build and serve locally on http://localhost:8081
@@ -38,7 +38,7 @@ Edit source files, not generated output:
 | `assets/js/site.js` | Client-side behavior |
 | `assets/images/` | Repository-managed images |
 | `../wp-content/uploads/` | Image source collection copied by the build |
-| `dist/` | Generated deployable site; do not edit manually |
+| `docs/` | Generated deployable site; do not edit manually |
 
 ## Validation and release
 
@@ -62,16 +62,3 @@ make release
 `make release` generates minified production output, validates HTML and local
 links, checks JavaScript syntax, verifies editable-file formatting, and audits
 image budgets.
-
-## Deployment
-
-```sh
-# Preview the configured deployment
-make deploy-dry
-
-# Build, validate, and deploy
-make deploy
-```
-
-Deployment delegates to `../scripts/deploy-static.sh`; its environment and
-target configuration are maintained outside this repository.

@@ -13,8 +13,8 @@ HTML pages and copies the static assets into `docs/`.
 - [Prettier](https://prettier.io/), optional for formatting commands
 - ImageMagick (`magick`), optional for image optimization
 
-The build expects the source image collection at
-`../wp-content/uploads/` and supporting source files at `../misc/`.
+The build reads the source image collection and supporting legal-page fragments
+from the adjacent `../dotykzdrowia_wordpress/` project.
 
 ## Development
 
@@ -27,18 +27,21 @@ make serve
 
 # Use a different port
 make serve PORT=3000
+
+# Create the project-site output for https://izikeros.github.io/nataliadotykzdrowia/
+make github-pages
 ```
 
 Edit source files, not generated output:
 
-| Path | Purpose |
-| --- | --- |
-| `build.py` | Page markup, navigation, metadata, and generated text content |
-| `assets/css/site.css` | Site styles |
-| `assets/js/site.js` | Client-side behavior |
-| `assets/images/` | Repository-managed images |
-| `../wp-content/uploads/` | Image source collection copied by the build |
-| `docs/` | Generated deployable site; do not edit manually |
+| Path                         | Purpose                                                       |
+| ---------------------------- | ------------------------------------------------------------- |
+| `build.py`                   | Page markup, navigation, metadata, and generated text content |
+| `assets/css/site.css`        | Site styles                                                   |
+| `assets/js/site.js`          | Client-side behavior                                          |
+| `assets/images/`             | Repository-managed images                                     |
+| `../dotykzdrowia_wordpress/` | WordPress image and legal-page source collection              |
+| `docs/`                      | Generated deployable site; do not edit manually               |
 
 ## Validation and release
 
@@ -62,3 +65,16 @@ make release
 `make release` generates minified production output, validates HTML and local
 links, checks JavaScript syntax, verifies editable-file formatting, and audits
 image budgets.
+
+## Deployment paths
+
+`make build`, `make serve`, and `make release` generate root-based URLs. Use
+them for local preview (`http://localhost:8081/`) and, after the custom domain
+is configured, for `https://nataliadotykzdrowia.pl/`.
+
+Until then, publish the `docs/` directory created by `make github-pages` to
+GitHub Pages. It prefixes local asset and page URLs with
+`/nataliadotykzdrowia/`, so the site works at
+`https://izikeros.github.io/nataliadotykzdrowia/`. When moving to the custom
+domain, publish the root-based `make release` output instead; canonical URLs,
+the sitemap, and `robots.txt` already name that domain.

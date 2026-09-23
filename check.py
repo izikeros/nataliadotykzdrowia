@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Validate generated static pages without third-party dependencies."""
 
+import argparse
 from html.parser import HTMLParser
 from pathlib import Path
 import sys
@@ -15,6 +16,11 @@ HOME_OFFER_LINKS = (
         "Holistyczna terapia naturalna w gabinecie we Wrocławiu",
     ),
     ("/oferta/#online", "Holistyczna współpraca indywidualna online"),
+)
+CSS_LOCAL_URLS = (
+    "/assets/images/tlo.png",
+    "/assets/images/markus-spiske-IKvDKHWF_5w-unsplash-scaled.jpg",
+    "/assets/images/tlo2.png",
 )
 
 
@@ -44,13 +50,23 @@ class PageAudit(HTMLParser):
                 self.local_urls.append(value.partition("#")[0].partition("?")[0])
 
 
-def resolve_local_url(url):
+def normalize_base_path(base_path):
+    if not base_path.startswith("/") or not base_path.endswith("/"):
+        raise ValueError("Base path must start and end with /.")
+    return base_path
+
+
+def resolve_local_url(url, base_path):
+    if not url.startswith(base_path):
+        return None
+    url = "/" + url.removeprefix(base_path)
     if url.startswith("/assets/"):
         return DIST / url.lstrip("/")
     return DIST / url.lstrip("/") / "index.html"
 
 
-def main():
+def main(base_path="/"):
+    base_path = normalize_base_path(base_path)
     errors = []
     for route in ROUTES:
         page = DIST / route / "index.html"
@@ -71,7 +87,8 @@ def main():
         document = page.read_text(encoding="utf-8")
         if route == "":
             for href, label in HOME_OFFER_LINKS:
-                if f'href="{href}"' not in document or label not in document:
+                prefixed_href = f"{base_path}{href.lstrip('/')}"
+                if f'href="{prefixed_href}"' not in document or label not in document:
                     errors.append(f"{page.relative_to(ROOT)}: missing linked production offer title")
         if "Copyright 2026 Natalia Safjan" not in document:
             errors.append(f"{page.relative_to(ROOT)}: missing production copyright")
@@ -86,8 +103,18 @@ def main():
                 f"images, found {audit.testimonials}"
             )
         for url in audit.local_urls:
-            if not resolve_local_url(url).exists():
+            target = resolve_local_url(url, base_path)
+            if target is None:
+                errors.append(
+                    f"{page.relative_to(ROOT)}: local URL does not use base path {base_path}: {url}"
+                )
+            elif not target.exists():
                 errors.append(f"{page.relative_to(ROOT)}: missing local target {url}")
+    css = (DIST / "assets" / "css" / "site.css").read_text(encoding="utf-8")
+    for url in CSS_LOCAL_URLS:
+        prefixed_url = f"{base_path}{url.lstrip('/')}"
+        if prefixed_url not in css:
+            errors.append(f"docs/assets/css/site.css: missing local target {prefixed_url}")
     for file in ("robots.txt", "sitemap.xml"):
         if not (DIST / file).is_file():
             errors.append(f"Missing {file}")
@@ -99,4 +126,10 @@ def main():
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--base-path",
+        default="/",
+        help="URL path where the generated site is served (default: /).",
+    )
+    raise SystemExit(main(**vars(parser.parse_args())))

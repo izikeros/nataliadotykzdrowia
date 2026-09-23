@@ -7,7 +7,7 @@ MAX_IMAGE_BYTES ?= 2621440
 MAX_IMAGE_TOTAL_BYTES ?= 8388608
 HTML_FORMAT ?= tidy
 
-.PHONY: help build serve clean lint format format-check html-format html-compact html-tidy minify images-audit images-optimize release deploy deploy-dry
+.PHONY: help build serve clean lint format format-check html-format html-compact html-tidy minify images-audit images-optimize release github-pages deploy deploy-dry
 
 help: ## Show static-site commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -49,6 +49,12 @@ images-audit: build ## Check emitted image dimensions and payload budgets
 
 images-optimize: minify ## Generate WebP/AVIF copies in docs/, then audit them
 	@$(PYTHON) optimize_images.py
+	@$(PYTHON) image_audit.py --max-dimension $(MAX_IMAGE_DIMENSION) --max-file-bytes $(MAX_IMAGE_BYTES) --max-total-bytes $(MAX_IMAGE_TOTAL_BYTES)
+
+github-pages: format-check ## Create validated GitHub Pages project-site output in docs/
+	@$(PYTHON) build.py --minify --base-path /nataliadotykzdrowia/
+	@$(PYTHON) check.py --base-path /nataliadotykzdrowia/
+	@node --check assets/js/site.js
 	@$(PYTHON) image_audit.py --max-dimension $(MAX_IMAGE_DIMENSION) --max-file-bytes $(MAX_IMAGE_BYTES) --max-total-bytes $(MAX_IMAGE_TOTAL_BYTES)
 
 release: minify format-check ## Create validated minified release output

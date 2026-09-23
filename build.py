@@ -10,8 +10,9 @@ import re
 
 ROOT = Path(__file__).parent
 OUT = ROOT / "docs"
-MISC = ROOT.parent / "misc"
-UPLOADS = ROOT.parent / "wp-content" / "uploads"
+WORDPRESS = ROOT.parent / "dotykzdrowia_wordpress"
+MISC = WORDPRESS / "misc"
+UPLOADS = WORDPRESS / "wp-content" / "uploads"
 
 NAV = (
     ('/o-mnie/', 'O mnie'),
@@ -190,14 +191,42 @@ def minify_css(path):
     path.write_text(css.strip() + "\n", encoding="utf-8")
 
 
-def write(route, title, description, content, minify):
+def normalize_base_path(base_path):
+    if not re.fullmatch(r"(?:/[A-Za-z0-9._~-]+)*/?", base_path):
+        raise ValueError(
+            "Base path must be / or a slash-delimited path such as /nataliadotykzdrowia/."
+        )
+    return "/" if base_path == "/" else f"/{base_path.strip('/')}/"
+
+
+def prefix_local_urls(document, base_path):
+    if base_path == "/":
+        return document
+    return re.sub(
+        r"""((?:href|src)=["'])/(?!/)""",
+        rf"\g<1>{base_path}",
+        document,
+    )
+
+
+def prefix_css_urls(path, base_path):
+    if base_path == "/":
+        return
+    css = path.read_text(encoding="utf-8")
+    css = re.sub(r"""(url\(\s*["']?)/(?!/)""", rf"\g<1>{base_path}", css)
+    path.write_text(css, encoding="utf-8")
+
+
+def write(route, title, description, content, minify, base_path):
     target = OUT / route.strip("/") / "index.html"
     target.parent.mkdir(parents=True, exist_ok=True)
     document = shared(title, description, content, "/" + route.strip("/") + ("/" if route else ""))
+    document = prefix_local_urls(document, base_path)
     target.write_text(minify_html(document) if minify else document, encoding="utf-8")
 
 
-def main(minify=False):
+def main(minify=False, base_path="/"):
+    base_path = normalize_base_path(base_path)
     if OUT.exists():
         rmtree(OUT)
     (OUT / "assets").mkdir(parents=True)
@@ -209,6 +238,8 @@ def main(minify=False):
             copy2(file, target / file.name)
             if minify and file.name == "site.css":
                 minify_css(target / file.name)
+            if file.name == "site.css":
+                prefix_css_urls(target / file.name, base_path)
     images = OUT / "assets" / "images"
     images.mkdir()
     for path in (
@@ -228,14 +259,14 @@ def main(minify=False):
         ROOT / "assets/images/zjecie_konsultacja-online.webp",
         images / "zjecie_konsultacja-online.webp",
     )
-    write("", "Refleksolog z pasją", "Holistyczne terapie naturalne dla kobiet we Wrocławiu i online.", HOME, minify)
-    write("oferta", "Oferta", "Holistyczne terapie naturalne we Wrocławiu i współpraca online.", OFFER, minify)
-    write("o-mnie", "O mnie", "Poznaj Natalię Safjan, terapeutkę holistyczną i refleksolog.", ABOUT, minify)
-    write("opinie", "Opinie", "Opinie klientek Dotyku Zdrowia.", REVIEWS, minify)
+    write("", "Refleksolog z pasją", "Holistyczne terapie naturalne dla kobiet we Wrocławiu i online.", HOME, minify, base_path)
+    write("oferta", "Oferta", "Holistyczne terapie naturalne we Wrocławiu i współpraca online.", OFFER, minify, base_path)
+    write("o-mnie", "O mnie", "Poznaj Natalię Safjan, terapeutkę holistyczną i refleksolog.", ABOUT, minify, base_path)
+    write("opinie", "Opinie", "Opinie klientek Dotyku Zdrowia.", REVIEWS, minify, base_path)
     privacy, privacy_title = legal_page("polityka_prywatnosci.html", "Polityka prywatności")
     rules, rules_title = legal_page("Regulamin_Newslettera.html", "Regulamin newslettera")
-    write("polityka-prywatnosci", privacy_title, "Polityka prywatności Dotyku Zdrowia.", privacy, minify)
-    write("regulamin-newslettera", rules_title, "Regulamin newslettera Dotyku Zdrowia.", rules, minify)
+    write("polityka-prywatnosci", privacy_title, "Polityka prywatności Dotyku Zdrowia.", privacy, minify, base_path)
+    write("regulamin-newslettera", rules_title, "Regulamin newslettera Dotyku Zdrowia.", rules, minify, base_path)
     (OUT / "robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: https://nataliadotykzdrowia.pl/sitemap.xml\n", encoding="utf-8")
     (OUT / "sitemap.xml").write_text("""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">""" + "".join(
@@ -247,4 +278,9 @@ def main(minify=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--minify", action="store_true", help="Minify generated HTML and CSS.")
+    parser.add_argument(
+        "--base-path",
+        default="/",
+        help="URL path where the site is served (default: /).",
+    )
     main(**vars(parser.parse_args()))

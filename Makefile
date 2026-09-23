@@ -1,0 +1,63 @@
+.DEFAULT_GOAL := help
+
+PYTHON ?= python3
+PORT ?= 8081
+MAX_IMAGE_DIMENSION ?= 2560
+MAX_IMAGE_BYTES ?= 2621440
+MAX_IMAGE_TOTAL_BYTES ?= 8388608
+HTML_FORMAT ?= tidy
+
+.PHONY: help build serve clean lint format format-check html-format html-compact html-tidy minify images-audit images-optimize release deploy deploy-dry
+
+help: ## Show static-site commands
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
+
+build: ## Generate readable static output in dist/
+	@$(PYTHON) build.py
+
+serve: build ## Serve dist/ locally (override with PORT=...)
+	@$(PYTHON) -m http.server $(PORT) --directory dist
+
+clean: ## Remove generated static output
+	@rm -rf dist
+
+lint: build ## Validate generated HTML/local links and JavaScript syntax
+	@$(PYTHON) check.py
+	@node --check assets/js/site.js
+
+format: ## Format editable CSS, JavaScript, and Markdown with installed Prettier
+	@prettier --write assets/css/site.css assets/js/site.js README.md
+
+format-check: ## Check editable CSS, JavaScript, and Markdown formatting
+	@prettier --check assets/css/site.css assets/js/site.js README.md
+
+html-format: build ## Format generated HTML (HTML_FORMAT=compact or tidy)
+	@$(PYTHON) format_html.py $(HTML_FORMAT)
+
+html-compact: HTML_FORMAT=compact
+html-compact: html-format ## Put each generated HTML file on one line
+
+html-tidy: HTML_FORMAT=tidy
+html-tidy: html-format ## Indent generated HTML for easy reading
+
+minify: clean ## Generate minified HTML/CSS output in dist/
+	@$(PYTHON) build.py --minify
+
+images-audit: build ## Check emitted image dimensions and payload budgets
+	@$(PYTHON) image_audit.py --max-dimension $(MAX_IMAGE_DIMENSION) --max-file-bytes $(MAX_IMAGE_BYTES) --max-total-bytes $(MAX_IMAGE_TOTAL_BYTES)
+
+images-optimize: minify ## Generate WebP/AVIF copies in dist/, then audit them
+	@$(PYTHON) optimize_images.py
+	@$(PYTHON) image_audit.py --max-dimension $(MAX_IMAGE_DIMENSION) --max-file-bytes $(MAX_IMAGE_BYTES) --max-total-bytes $(MAX_IMAGE_TOTAL_BYTES)
+
+release: minify format-check ## Create validated minified release output
+	@$(PYTHON) check.py
+	@node --check assets/js/site.js
+	@$(PYTHON) image_audit.py --max-dimension $(MAX_IMAGE_DIMENSION) --max-file-bytes $(MAX_IMAGE_BYTES) --max-total-bytes $(MAX_IMAGE_TOTAL_BYTES)
+
+deploy-dry: release ## Preview deployment to configured staging path
+	@bash ../scripts/deploy-static.sh --dry-run
+
+deploy: release ## Deploy minified output to configured staging path
+	@bash ../scripts/deploy-static.sh

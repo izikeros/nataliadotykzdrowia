@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).parent
-DIST = ROOT / "dist"
+DIST = ROOT / "docs"
 ROUTES = ("", "oferta", "o-mnie", "opinie", "polityka-prywatnosci", "regulamin-newslettera")
 EXPECTED_TESTIMONIALS = {"": 7, "opinie": 32}
 HOME_OFFER_LINKS = (

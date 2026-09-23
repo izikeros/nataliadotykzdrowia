@@ -9,7 +9,7 @@ import argparse
 import re
 
 ROOT = Path(__file__).parent
-OUT = ROOT / "dist"
+OUT = ROOT / "docs"
 MISC = ROOT.parent / "misc"
 UPLOADS = ROOT.parent / "wp-content" / "uploads"
 

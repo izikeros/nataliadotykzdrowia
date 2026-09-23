@@ -13,14 +13,14 @@ help: ## Show static-site commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
 
-build: ## Generate readable static output in dist/
+build: ## Generate readable static output in docs/
 	@$(PYTHON) build.py
 
-serve: build ## Serve dist/ locally (override with PORT=...)
-	@$(PYTHON) -m http.server $(PORT) --directory dist
+serve: build ## Serve docs/ locally (override with PORT=...)
+	@$(PYTHON) -m http.server $(PORT) --directory docs
 
 clean: ## Remove generated static output
-	@rm -rf dist
+	@rm -rf docs
 
 lint: build ## Validate generated HTML/local links and JavaScript syntax
 	@$(PYTHON) check.py
@@ -41,13 +41,13 @@ html-compact: html-format ## Put each generated HTML file on one line
 html-tidy: HTML_FORMAT=tidy
 html-tidy: html-format ## Indent generated HTML for easy reading
 
-minify: clean ## Generate minified HTML/CSS output in dist/
+minify: clean ## Generate minified HTML/CSS output in docs/
 	@$(PYTHON) build.py --minify
 
 images-audit: build ## Check emitted image dimensions and payload budgets
 	@$(PYTHON) image_audit.py --max-dimension $(MAX_IMAGE_DIMENSION) --max-file-bytes $(MAX_IMAGE_BYTES) --max-total-bytes $(MAX_IMAGE_TOTAL_BYTES)
 
-images-optimize: minify ## Generate WebP/AVIF copies in dist/, then audit them
+images-optimize: minify ## Generate WebP/AVIF copies in docs/, then audit them
 	@$(PYTHON) optimize_images.py
 	@$(PYTHON) image_audit.py --max-dimension $(MAX_IMAGE_DIMENSION) --max-file-bytes $(MAX_IMAGE_BYTES) --max-total-bytes $(MAX_IMAGE_TOTAL_BYTES)
 

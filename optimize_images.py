@@ -22,7 +22,7 @@ def run(command):
 
 def main():
     parser = ArgumentParser(description=__doc__)
-    parser.add_argument("--directory", type=Path, default=Path("dist/assets/images"))
+    parser.add_argument("--directory", type=Path, default=Path("docs/assets/images"))
     parser.add_argument("--webp-quality", type=int, default=82)
     parser.add_argument("--avif-quality", type=int, default=50)
     args = parser.parse_args()

@@ -7,7 +7,7 @@ import re
 import subprocess
 
 ROOT = Path(__file__).parent
-DIST = ROOT / "dist"
+DIST = ROOT / "docs"
 
 
 def compact(document):

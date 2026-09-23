@@ -27,7 +27,7 @@ def dimensions(image):
 
 def main():
     parser = ArgumentParser(description=__doc__)
-    parser.add_argument("--directory", type=Path, default=Path("dist/assets/images"))
+    parser.add_argument("--directory", type=Path, default=Path("docs/assets/images"))
     parser.add_argument("--max-dimension", type=int, default=2560)
     parser.add_argument("--max-file-bytes", type=int, default=2621440)
     parser.add_argument("--max-total-bytes", type=int, default=8388608)

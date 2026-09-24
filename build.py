@@ -259,6 +259,7 @@ def main(minify=False, base_path="/"):
         ROOT / "assets/images/zjecie_konsultacja-online.webp",
         images / "zjecie_konsultacja-online.webp",
     )
+    copy2(ROOT / "assets/analiza.html", OUT / "analiza.html")
     write("", "Refleksolog z pasją", "Holistyczne terapie naturalne dla kobiet we Wrocławiu i online.", HOME, minify, base_path)
     write("oferta", "Oferta", "Holistyczne terapie naturalne we Wrocławiu i współpraca online.", OFFER, minify, base_path)
     write("o-mnie", "O mnie", "Poznaj Natalię Safjan, terapeutkę holistyczną i refleksolog.", ABOUT, minify, base_path)

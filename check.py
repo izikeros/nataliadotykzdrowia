@@ -22,6 +22,13 @@ CSS_LOCAL_URLS = (
     "/assets/images/markus-spiske-IKvDKHWF_5w-unsplash-scaled.jpg",
     "/assets/images/tlo2.png",
 )
+STANDALONE_PAGES = {
+    "analiza.html": (
+        "Kwestionariusz Analizy sygnałów ciała",
+        'id="resetBtn"',
+        "data-system=",
+    ),
+}
 
 
 class PageAudit(HTMLParser):
@@ -118,6 +125,23 @@ def main(base_path="/"):
     for file in ("robots.txt", "sitemap.xml"):
         if not (DIST / file).is_file():
             errors.append(f"Missing {file}")
+    for filename, markers in STANDALONE_PAGES.items():
+        page = DIST / filename
+        if not page.is_file():
+            errors.append(f"Missing standalone page output: {page.relative_to(ROOT)}")
+            continue
+        document = page.read_text(encoding="utf-8")
+        audit = PageAudit()
+        audit.feed(document)
+        if audit.doctypes != 1:
+            errors.append(f"{page.relative_to(ROOT)}: expected one HTML5 doctype")
+        if not audit.lang:
+            errors.append(f"{page.relative_to(ROOT)}: missing lang=pl")
+        if not audit.title:
+            errors.append(f"{page.relative_to(ROOT)}: missing <title>")
+        for marker in markers:
+            if marker not in document:
+                errors.append(f"{page.relative_to(ROOT)}: missing expected content {marker}")
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1

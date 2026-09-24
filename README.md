@@ -39,6 +39,7 @@ Edit source files, not generated output:
 | `build.py`                   | Page markup, navigation, metadata, and generated text content |
 | `assets/css/site.css`        | Site styles                                                   |
 | `assets/js/site.js`          | Client-side behavior                                          |
+| `assets/analiza.html`        | Standalone interactive body-signal analysis questionnaire     |
 | `assets/images/`             | Repository-managed images                                     |
 | `../dotykzdrowia_wordpress/` | WordPress image and legal-page source collection              |
 | `docs/`                      | Generated deployable site; do not edit manually               |

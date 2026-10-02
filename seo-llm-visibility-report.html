@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Audyt SEO i widoczności w odpowiedziach AI — Dotyk Zdrowia</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font:
+          16px/1.55 system-ui,
+          sans-serif;
+        color: #242631;
+        background: #f8f5f7;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        max-width: 1160px;
+        margin: auto;
+        padding: clamp(16px, 4vw, 48px);
+      }
+      h1,
+      h2,
+      h3 {
+        line-height: 1.2;
+        color: #502a43;
+      }
+      h1 {
+        font-size: clamp(1.7rem, 4vw, 2.7rem);
+        margin: 0.4em 0;
+      }
+      h2 {
+        font-size: 1.45rem;
+      }
+      h3 {
+        font-size: 1.12rem;
+      }
+      p {
+        max-width: 85ch;
+      }
+      .eyebrow {
+        color: #793556;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+      }
+      .muted {
+        color: #545560;
+      }
+      .intro,
+      .card,
+      .tabpanel {
+        background: #fff;
+        border: 1px solid #e7dbe3;
+        border-radius: 16px;
+        padding: clamp(18px, 3vw, 30px);
+      }
+      .intro {
+        margin-bottom: 24px;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 18px 0;
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 9px;
+        border-radius: 99px;
+        background: #ebf3ec;
+        color: #225237;
+        font-size: 0.81rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .badge.missing {
+        background: #fbeae8;
+        color: #882d29;
+      }
+      .badge.review {
+        background: #fff0d5;
+        color: #785014;
+      }
+      .badge.na {
+        background: #eeeef2;
+        color: #474753;
+      }
+      .tabs {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 5px 2px 14px;
+        scrollbar-width: thin;
+      }
+      .tabs button {
+        flex: 0 0 auto;
+        cursor: pointer;
+        border: 1px solid #bd9bad;
+        border-radius: 10px;
+        background: white;
+        color: #502a43;
+        padding: 11px 16px;
+        font: inherit;
+        font-weight: 650;
+      }
+      .tabs button[aria-selected="true"] {
+        background: #733655;
+        color: white;
+        border-color: #733655;
+      }
+      :focus-visible {
+        outline: 3px solid #cf7a25;
+        outline-offset: 3px;
+      }
+      .tabpanel {
+        min-height: 420px;
+      }
+      .route {
+        overflow-wrap: anywhere;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+        gap: 16px;
+        margin: 22px 0;
+      }
+      .card {
+        padding: 19px;
+        min-width: 0;
+      }
+      .card h3 {
+        margin-top: 0;
+      }
+      .card p {
+        margin-bottom: 0;
+      }
+      .value {
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+        margin: 10px 0;
+      }
+      .wide {
+        grid-column: 1 / -1;
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 0.91rem;
+      }
+      th,
+      td {
+        border-bottom: 1px solid #e8dfe4;
+        text-align: left;
+        padding: 9px;
+        vertical-align: top;
+        overflow-wrap: anywhere;
+      }
+      th {
+        background: #f7f0f4;
+        white-space: nowrap;
+      }
+      td:first-child {
+        font-weight: 600;
+      }
+      code {
+        font-size: 0.9em;
+        overflow-wrap: anywhere;
+      }
+      ul {
+        padding-left: 1.35em;
+      }
+      li {
+        margin: 0.45em 0;
+      }
+      a {
+        color: #672748;
+      }
+      details {
+        margin-top: 15px;
+      }
+      summary {
+        cursor: pointer;
+        font-weight: 650;
+      }
+      .note {
+        border-left: 4px solid #955176;
+        padding: 9px 16px;
+        background: #f8f1f5;
+        margin: 18px 0;
+      }
+      footer {
+        padding: 24px 0;
+      }
+      @media (max-width: 650px) {
+        th,
+        td {
+          padding: 7px;
+        }
+        .tabpanel {
+          padding: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="intro">
+      <p class="eyebrow">Jednorazowa migawka · 29 września 2026</p>
+      <h1>SEO i widoczność dla wyszukiwarek oraz agentów AI</h1>
+      <p>
+        Dotyk Zdrowia: rzeczywisty stan kodu źródłowego <code>build.py</code>,
+        kwestionariusza <code>assets/analiza.html</code> i obrazów w
+        wygenerowanym <code>docs/</code>. Wybierz widok, aby porównać istniejące
+        wartości, braki i zalecenia. Ten plik jest raportem lokalnym, a nie
+        skanerem działającej witryny.
+      </p>
+      <p class="muted">
+        Nie zweryfikowano odpowiedzi serwera, przekierowań po WordPressie,
+        indeksacji, kont Search Console, Core Web Vitals ani tego, który wariant
+        buildu jest wdrożony. Wygenerowany zapis <code>docs/</code> ma adresy
+        zasobów dla ścieżki projektu GitHub Pages; dane kanoniczne pochodzą ze
+        źródła.
+      </p>
+      <div class="legend" aria-label="Znaczenie oznaczeń">
+        <span class="badge">Jest</span><span class="badge missing">Brak</span
+        ><span class="badge review">Do poprawy / weryfikacji</span
+        ><span class="badge na">Nie dotyczy</span>
+      </div>
+    </header>
+
+    <nav
+      class="tabs"
+      role="tablist"
+      aria-label="Widoki witryny"
+      id="tabs"
+    ></nav>
+    <main
+      id="report"
+      class="tabpanel"
+      role="tabpanel"
+      tabindex="0"
+      aria-live="polite"
+    ></main>
+    <noscript
+      >Do przełączania zakładek potrzebny jest JavaScript; pełny opis audytu
+      zawiera seo-llm-visibility-audit.md.</noscript
+    >
+    <section
+      class="intro"
+      aria-labelledby="shared-title"
+      style="margin-top: 24px"
+    >
+      <h2 id="shared-title">Stan wspólny i priorytety</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Indeksowanie i dostępność</h3>
+          <p>
+            W kodzie: <code>robots.txt</code> zezwala wszystkim zgodnym
+            crawlerom i wskazuje sitemapę; sitemap zawiera sześć tras, nie
+            zawiera <code>/analiza.html</code>. Nie stwierdzono reguł
+            <code>noindex</code> w źródle. Nagłówki HTTP, blokady CDN,
+            rzeczywiste 404 i 301/308 oraz indeksację trzeba sprawdzić na
+            serwerze. Brak wpisu w sitemapie nie blokuje indeksowania.
+          </p>
+        </div>
+        <div class="card">
+          <h3>SEO lokalne i zaufanie</h3>
+          <p>
+            Brakuje pełnego publicznego adresu i godzin, a poświadczenia
+            zawodowe nie mają tu weryfikowalnych danych instytucji i roku. Nie
+            dopisywać niepotwierdzonych informacji ani schematów medycznych.
+            Zweryfikować zdrowotne deklaracje, przeciwwskazania i źródła przed
+            poszerzaniem treści.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Wyniki AI i LLM</h3>
+          <p>
+            Widoczna, precyzyjna treść HTML, wiarygodne źródła, spójne
+            informacje o usługach i profilach oraz indeksowalność są ważniejsze
+            od eksperymentalnego <code>llms.txt</code>. Google nie wymaga
+            dodatkowego pliku ani znacznika do AI Overviews/AI Mode; ewentualną
+            politykę dla crawlerów szkoleniowych i wyszukiwawczych ustalić
+            osobno.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Słowa kluczowe</h3>
+          <p>
+            Na wszystkich widokach brak <code>meta keywords</code>. To
+            obserwacja, nie krytyczny błąd: Google nie używa tego metatagu jako
+            sygnału rankingu. Warto raczej poprawić naturalne nazwy usług,
+            lokalizację, tytuły, nagłówki i odpowiedzi na realne pytania.
+          </p>
+        </div>
+      </div>
+      <p>
+        <strong>Kolejność prac:</strong> najpierw weryfikacja migrowanych URL-i,
+        faktów zdrowotnych i kontaktu; potem precyzyjne tytuły/opisy,
+        transkrypcje opinii i odpowiedzi o usługach; następnie zgodne z treścią
+        dane strukturalne, obrazy Open Graph oraz optymalizacja grafik.
+        Szczegółowe uzasadnienie:
+        <a href="seo-llm-visibility-audit.md">audyt Markdown</a>.
+      </p>
+    </section>
+    <footer class="muted">
+      Pomiary rozmiarów są podane w KiB (1024 bajty) na podstawie plików w
+      <code>docs/assets/images/</code>; nie są pomiarem transferu ani wydajności
+      produkcyjnej. Po zmianie strony raport trzeba przejrzeć ponownie ręcznie.
+    </footer>
+    <script>
+      "use strict";
+      const brand = " | Dotyk Zdrowia Natalia Safjan";
+      const domain = "https://nataliadotykzdrowia.pl";
+      const assets = {
+        "logo.png": [748, 172, 13.0],
+        "cropped-fav-32x32.png": [32, 32, 0.7],
+        "profilowe-zdjece.jpg": [486, 486, 42.8],
+        "natalia.jpg": [487, 487, 43.6],
+        "refl-twarzy.jpg": [626, 417, 139.5],
+        "zjecie_konsultacja-online.webp": [1536, 1024, 137.1],
+        "tlo.png": [1200, 675, 637.9],
+        "tlo2.png": [1200, 675, 1602.6],
+        "markus-spiske-IKvDKHWF_5w-unsplash-scaled.jpg": [1707, 2560, 361.4],
+        "1_ewa.png": [1170, 997, 451.3],
+        "2_agata.png": [1170, 645, 246.9],
+        "IMG_3641.jpg": [1170, 530, 317.2],
+        "IMG_3634.jpg": [1170, 775, 473.1],
+        "21.png": [813, 240, 56.4],
+        "24.png": [814, 240, 62.6],
+        "22.png": [812, 235, 65.4],
+        "27.png": [826, 240, 60.6],
+        "3.png": [807, 160, 19.3],
+        "2.jpg": [807, 159, 28.0],
+        "14.png": [807, 241, 73.0],
+        "8.png": [807, 228, 66.4],
+        "12.png": [807, 253, 75.4],
+        "19.png": [813, 240, 72.5],
+        "5.png": [807, 189, 28.3],
+        "15.png": [808, 241, 41.1],
+        "1.png": [790, 156, 23.1],
+        "6.png": [807, 189, 27.1],
+        "4.png": [807, 160, 9.4],
+        "7.png": [807, 192, 36.6],
+        "9.png": [807, 204, 32.9],
+        "10.png": [807, 204, 9.7],
+        "11.png": [807, 253, 75.7],
+        "13.png": [807, 177, 40.3],
+        "16.png": [812, 159, 21.0],
+        "17.png": [812, 159, 14.6],
+        "18a.png": [812, 235, 33.1],
+        "20.png": [813, 240, 44.4],
+        "25.png": [826, 240, 21.3],
+        "26.png": [826, 240, 28.7],
+        "28.png": [826, 240, 35.6],
+        "29.png": [826, 240, 21.7],
+      };
+      const reviews = [
+        "1_ewa.png",
+        "2_agata.png",
+        "IMG_3641.jpg",
+        "IMG_3634.jpg",
+        "21.png",
+        "24.png",
+        "22.png",
+        "27.png",
+        "3.png",
+        "2.jpg",
+        "14.png",
+        "8.png",
+        "12.png",
+        "19.png",
+        "5.png",
+        "15.png",
+        "1.png",
+        "6.png",
+        "4.png",
+        "7.png",
+        "9.png",
+        "10.png",
+        "11.png",
+        "13.png",
+        "16.png",
+        "17.png",
+        "18a.png",
+        "20.png",
+        "25.png",
+        "26.png",
+        "28.png",
+        "29.png",
+      ];
+      const common = {
+        name: "logo.png",
+        alt: "Dotyk Zdrowia",
+        display: "300×69",
+        kind: "Nagłówek",
+      };
+      const favicon = {
+        name: "cropped-fav-32x32.png",
+        alt: "Nie dotyczy",
+        display: "Nie dotyczy",
+        kind: "Ikona strony",
+      };
+      const image = (name, alt, display, kind = "Treść") => ({
+        name,
+        alt,
+        display,
+        kind,
+      });
+      const background = (name) =>
+        image(name, "Nie dotyczy — tło CSS", "Nie dotyczy", "Tło CSS");
+      const pages = [
+        {
+          label: "Główna",
+          path: "/",
+          title: "Refleksolog z pasją" + brand,
+          description:
+            "Holistyczne terapie naturalne dla kobiet we Wrocławiu i online.",
+          h1: "Czujesz, że Twój organizm od dłuższego czasu wysyła Ci sygnały?",
+          images: [
+            common,
+            image("profilowe-zdjece.jpg", "Natalia Safjan", "486×486"),
+            image("refl-twarzy.jpg", "Terapia refleksologiczna", "626×417"),
+            image(
+              "zjecie_konsultacja-online.webp",
+              "Konsultacja online",
+              "1536×1024",
+            ),
+            ...[
+              "1_ewa.png",
+              "IMG_3634.jpg",
+              "IMG_3641.jpg",
+              "14.png",
+              "12.png",
+              "22.png",
+              "24.png",
+            ].map((name) => image(name, "Opinia klientki", "Brak")),
+            image("logo.png", "Dotyk Zdrowia", "748×172", "Sekcja Kontakt"),
+            background("tlo.png"),
+            background("markus-spiske-IKvDKHWF_5w-unsplash-scaled.jpg"),
+            favicon,
+          ],
+          notes: [
+            "Tytuł i H1 nie identyfikują od razu pełnej oferty i lokalizacji. Przykład do oceny redakcyjnej: „Holistyczne terapie naturalne dla kobiet we Wrocławiu – Natalia Safjan”; opis może wyjaśniać wizyty w gabinecie i współpracę online.",
+            "Kontakt jest sekcją /#kontakt, nie osobną trasą: jest telefon, profile społecznościowe i rezerwacja, ale brak pełnego publicznego adresu, godzin i mapy (dodać wyłącznie prawdziwe dane).",
+            "Siedem zrzutów opinii na stronie głównej nie zastępuje dostępnego tekstu; po uzyskaniu zgody przenieść treść recenzji do HTML.",
+            "Tło tlo.png ma 637,9 KiB; tło sekcji Kontakt jest wspólne z osobną zakładką Kontakt, a nie kolejnym niezależnym zasobem.",
+          ],
+        },
+        {
+          label: "O mnie",
+          path: "/o-mnie/",
+          title: "O mnie" + brand,
+          description:
+            "Poznaj Natalię Safjan, terapeutkę holistyczną i refleksolog.",
+          h1: "O mnie",
+          images: [
+            common,
+            image("natalia.jpg", "Natalia Safjan", "487×487"),
+            background("tlo2.png"),
+            favicon,
+          ],
+          notes: [
+            "Przykład trafniejszego tytułu: „Natalia Safjan – dyplomowana refleksolog we Wrocławiu”; potwierdzić brzmienie kwalifikacji przed publikacją. Rozwinąć opis o praktykę i lokalizację.",
+            "Opisać kwalifikacje weryfikowalnie (instytucja, nazwa uprawnienia, rok), jeżeli można je upublicznić; nie dopisywać medycznych uprawnień.",
+            "Tekst przypisuje bańkom wyjście z zapalenia płuc i opisuje efekty w astmie, migrenach oraz stanach depresyjnych. Przejrzeć twierdzenia, źródła i ograniczenia bezpieczeństwa przed promocją tych tez.",
+            "Tło tlo2.png waży 1602,6 KiB — kandydat do optymalizacji po kontroli jakości obrazu.",
+          ],
+        },
+        {
+          label: "Oferta",
+          path: "/oferta/",
+          title: "Oferta" + brand,
+          description:
+            "Holistyczne terapie naturalne we Wrocławiu i współpraca online.",
+          h1: "Holistyczna terapia naturalna we Wrocławiu",
+          images: [
+            common,
+            image(
+              "refl-twarzy.jpg",
+              "Holistyczna terapia naturalna",
+              "626×417",
+            ),
+            image(
+              "zjecie_konsultacja-online.webp",
+              "Indywidualna współpraca online",
+              "1536×1024",
+            ),
+            favicon,
+          ],
+          notes: [
+            "Tytuł „Oferta” jest ogólny; przykładowo: „Holistyczna terapia we Wrocławiu i współpraca online – oferta”. Opis niech wyjaśnia etap pierwszej wizyty i sposób rezerwacji.",
+            "Pierwsza sesja ma podaną cenę 320 zł i czas około 75 minut. Zastanowić się nad odrębnymi stronami usług tylko dla rzeczywiście oferowanych usług; obecnie oferta obejmuje gabinet i współpracę online.",
+            "Sformułowania o badaniu meridianów, przyczynach problemów i „maksymalnym efekcie terapeutycznym” wymagają przeglądu faktów, przeciwwskazań i granic terapii.",
+            "Warto dodać konkretne pytania i odpowiedzi w widocznym HTML; ewentualny Service JSON-LD musi odpowiadać faktycznie opisanej ofercie.",
+          ],
+        },
+        {
+          label: "Opinie",
+          path: "/opinie/",
+          title: "Opinie" + brand,
+          description: "Opinie klientek Dotyku Zdrowia.",
+          h1: "Poniżej znajdziesz więcej opinii osób, którym towarzyszyłam w ich drodze do zdrowia. To słowa, które pojawiły się w recenzjach na Facebooku i w wizytówce Google.",
+          images: [
+            common,
+            ...reviews.map((name) => image(name, "Opinia klientki", "Brak")),
+            favicon,
+          ],
+          notes: [
+            "32 obrazy recenzji mają identyczny alt „Opinia klientki” i brak deklaracji width/height. Tego tekstu nie można łatwo cytować ani odczytać czytnikiem ekranu.",
+            "Za zgodą autorów przepisać opinie wiernie do HTML z datą, źródłem i atrybucją; po transkrypcji zrzut może mieć pusty alt, jeśli jest wyłącznie ilustracją powtórzonego tekstu.",
+            "Przykład tytułu: „Opinie klientek – terapie naturalne we Wrocławiu”; H1 można skrócić do „Opinie klientek Dotyku Zdrowia”, zachowując obecne zdanie jako wstęp.",
+            "Nie obiecywać gwiazdek Google na podstawie opinii o własnej firmie; nie składać AggregateRating z niespójnych źródeł.",
+          ],
+        },
+        {
+          label: "Prywatność",
+          path: "/polityka-prywatnosci/",
+          title: "Polityka prywatności" + brand,
+          description: "Polityka prywatności Dotyku Zdrowia.",
+          h1: "Polityka Prywatności",
+          images: [common, favicon],
+          notes: [
+            "Strona ma własny title, opis, canonical i czytelne śródtytuły. Brak komercyjnych słów kluczowych jest właściwy — treść prawna powinna przede wszystkim być aktualna i użyteczna.",
+            "Artykuł jest importowany z pliku w sąsiednim projekcie WordPress; sprawdzić merytoryczną zgodność z bieżącymi formularzami i praktyką prywatności, nie modyfikować jego kopii w docs/.",
+            "Specjalny obraz OG lub Service JSON-LD nie jest warunkiem dla polityki; wspólna grafika społecznościowa jest opcjonalna.",
+          ],
+        },
+        {
+          label: "Regulamin",
+          path: "/regulamin-newslettera/",
+          title: "Regulamin newslettera" + brand,
+          description: "Regulamin newslettera Dotyku Zdrowia.",
+          h1: "Regulamin Newslettera",
+          images: [common, favicon],
+          notes: [
+            "Strona ma title, opis i canonical, a poszczególne paragrafy są nagłówkami H2. Nie wymuszać w niej fraz usługowych ani struktury Service.",
+            "Treść importowana jest z sąsiedniego projektu; zweryfikować zgodność warunków z działaniem newslettera i formularza wyświetlanego po zgodzie.",
+            "Obraz OG dla dokumentu prawnego jest opcjonalny; jeśli będzie dodany, nie może sugerować innej treści strony.",
+          ],
+        },
+        {
+          label: "Kwestionariusz",
+          path: "/analiza.html",
+          title: "Kwestionariusz Analizy sygnałów ciała",
+          description: null,
+          h1: "Kwestionariusz Analizy sygnałów ciała",
+          standalone: true,
+          images: [],
+          notes: [
+            "Samodzielny plik assets/analiza.html jest kopiowany do docs/analiza.html; ma title, H1 i lang=pl, ale nie ma opisu, canonical ani OG. Nie jest w sitemapie.",
+            "Najpierw ustalić, czy formularz zdrowotny ma być publicznie indeksowany. Jeśli nie, rozważyć odpowiednią dyrektywę noindex w dostarczanej stronie lub nagłówku HTTP (nie blokować samego crawlowania przez robots.txt, jeśli crawler ma zobaczyć noindex).",
+            "Jeżeli ma być wyszukiwany, dodać spójne metadane i świadomie włączyć do sitemap. Sprawdzić komunikaty o prywatności i bezpieczeństwie danych zdrowotnych oddzielnie od SEO.",
+          ],
+        },
+        {
+          label: "Kontakt",
+          path: "/#kontakt",
+          title: "Refleksolog z pasją" + brand,
+          description:
+            "Holistyczne terapie naturalne dla kobiet we Wrocławiu i online.",
+          h1: "Czujesz, że Twój organizm od dłuższego czasu wysyła Ci sygnały?",
+          section: true,
+          images: [
+            image("logo.png", "Dotyk Zdrowia", "748×172", "Sekcja Kontakt"),
+            background("markus-spiske-IKvDKHWF_5w-unsplash-scaled.jpg"),
+          ],
+          notes: [
+            "To sekcja z H2 „Kontakt” na stronie głównej; nie ma własnego title, H1, canonical ani pozycji w sitemapie. Wyświetlone wartości metadanych są odziedziczone z /.",
+            "Aktualnie: numer telefonu 739 90 65 75, odnośniki Facebook/Instagram oraz zewnętrzna rezerwacja. Brak pełnego adresu dostępnego w treści strony, godzin, mapy i obszaru działania; pozyskać i potwierdzić dane przed publikacją.",
+            "Spójna nazwa, adres i telefon powinny odpowiadać profilowi firmy, systemowi rezerwacji i sklepowi. Nie tworzyć osobnej /kontakt/ wyłącznie dla audytu.",
+          ],
+        },
+      ];
+
+      const tabs = document.getElementById("tabs");
+      const report = document.getElementById("report");
+      const buttons = pages.map((page, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.id = `tab-${index}`;
+        button.role = "tab";
+        button.setAttribute("aria-controls", "report");
+        button.textContent = page.label;
+        button.addEventListener("click", () => select(index));
+        button.addEventListener("keydown", (event) => {
+          const target = {
+            ArrowRight: (index + 1) % pages.length,
+            ArrowLeft: (index - 1 + pages.length) % pages.length,
+            Home: 0,
+            End: pages.length - 1,
+          }[event.key];
+          if (target === undefined) return;
+          event.preventDefault();
+          select(target);
+          buttons[target].focus();
+        });
+        tabs.append(button);
+        return button;
+      });
+
+      function element(tag, text, className) {
+        const node = document.createElement(tag);
+        if (text !== undefined) node.textContent = text;
+        if (className) node.className = className;
+        return node;
+      }
+      function field(grid, title, value, status, suggestion) {
+        const card = element("section", undefined, "card");
+        card.append(
+          element("h3", title),
+          element(
+            "span",
+            status === "yes"
+              ? "Jest"
+              : status === "missing"
+                ? "Brak"
+                : status === "na"
+                  ? "Nie dotyczy"
+                  : "Do poprawy / weryfikacji",
+            `badge ${status === "yes" ? "" : status}`,
+          ),
+          element("p", value, "value"),
+        );
+        if (suggestion) card.append(element("p", suggestion, "muted"));
+        grid.append(card);
+      }
+      function table(images) {
+        const wrapper = element("div", undefined, "table-wrap");
+        const t = document.createElement("table");
+        const header = document.createElement("thead");
+        const headRow = document.createElement("tr");
+        for (const heading of [
+          "Plik / typ",
+          "Wymiary pliku",
+          "Rozmiar",
+          "Alt w HTML",
+          "width×height w HTML",
+        ])
+          headRow.append(element("th", heading));
+        header.append(headRow);
+        t.append(header);
+        const body = document.createElement("tbody");
+        for (const entry of images) {
+          const [w, h, kib] = assets[entry.name];
+          const row = document.createElement("tr");
+          for (const cell of [
+            `${entry.name} — ${entry.kind}`,
+            `${w}×${h} px`,
+            kib >= 1024
+              ? `${(kib / 1024).toFixed(2)} MiB (${kib.toFixed(1)} KiB)`
+              : `${kib.toFixed(1)} KiB`,
+            entry.alt,
+            entry.display,
+          ])
+            row.append(element("td", cell));
+          body.append(row);
+        }
+        t.append(body);
+        wrapper.append(t);
+        return wrapper;
+      }
+      function select(index) {
+        const page = pages[index];
+        buttons.forEach((button, i) => {
+          button.setAttribute("aria-selected", String(i === index));
+          button.tabIndex = i === index ? 0 : -1;
+        });
+        report.setAttribute("aria-labelledby", buttons[index].id);
+        report.replaceChildren();
+        report.append(
+          element("p", page.path, "eyebrow route"),
+          element("h2", page.label),
+        );
+        if (page.section)
+          report.append(
+            element(
+              "p",
+              "Sekcja strony głównej — poniższe metadane dotyczą całej strony /.",
+              "note",
+            ),
+          );
+        if (page.standalone)
+          report.append(
+            element(
+              "p",
+              "Samodzielny plik HTML; decyzja o indeksowaniu wymaga potwierdzenia.",
+              "note",
+            ),
+          );
+        const grid = element("div", undefined, "grid");
+        field(
+          grid,
+          "Tytuł <title>",
+          page.title,
+          "yes",
+          page.section ? "Dziedziczony ze strony głównej." : undefined,
+        );
+        field(
+          grid,
+          "Opis meta",
+          page.description ?? "Brak",
+          page.description ? "yes" : "missing",
+          page.description && !page.section && !page.standalone && index < 4
+            ? "Krótki opis: warto doprecyzować ofertę i intencję tej strony."
+            : undefined,
+        );
+        field(
+          grid,
+          "Canonical",
+          page.standalone ? "Brak" : domain + (page.section ? "/" : page.path),
+          page.standalone ? "missing" : "yes",
+          page.section
+            ? "Fragment #kontakt nie jest odrębną stroną kanoniczną."
+            : undefined,
+        );
+        field(
+          grid,
+          "Nagłówek H1",
+          page.h1,
+          index === 0 || index === 3 || page.section ? "review" : "yes",
+          page.section ? "H2 sekcji: Kontakt." : undefined,
+        );
+        field(grid, "Język dokumentu", "pl", "yes");
+        field(
+          grid,
+          "Meta keywords",
+          "Brak — Google nie używa tego metatagu do rankingu.",
+          "na",
+          "Zamiast niego: naturalne nazwy usług, miejscowości i odpowiedzi w treści.",
+        );
+        field(
+          grid,
+          "Open Graph: tytuł / opis / typ / URL",
+          "Brak",
+          page.standalone ? "na" : "missing",
+          page.standalone
+            ? "Zależy od decyzji o publicznym udostępnieniu."
+            : "Zaprojektować na podstawie rzeczywistej treści.",
+        );
+        field(
+          grid,
+          "Miniaturka Open Graph (og:image)",
+          "Brak. Logo i zdjęcia treści NIE są zadeklarowaną miniaturką OG.",
+          page.standalone
+            ? "na"
+            : index >= 4 && !page.section
+              ? "na"
+              : "missing",
+          "Dla stron ofertowych rozważyć przygotowanie np. 1200×630 px; obecnie brak również og:image:width i og:image:height.",
+        );
+        field(
+          grid,
+          "Karta X / Twitter",
+          "Brak: twitter:card / title / description / image",
+          page.standalone || (index >= 4 && !page.section) ? "na" : "missing",
+          "Opcjonalne na stronach prawnych i po decyzji o indeksowaniu kwestionariusza.",
+        );
+        field(
+          grid,
+          "Dane strukturalne JSON-LD",
+          "Brak",
+          page.standalone || (index >= 4 && !page.section) ? "na" : "missing",
+          "Dodać tylko typy odpowiadające widocznej, potwierdzonej treści; nie oznaczać niezweryfikowanych kwalifikacji i ocen.",
+        );
+        field(
+          grid,
+          "Sitemap",
+          page.standalone
+            ? "Brak wpisu /analiza.html"
+            : page.section
+              ? "Jest /; brak osobnego #kontakt (prawidłowo)"
+              : `Jest ${page.path}`,
+          page.standalone ? "review" : "yes",
+        );
+        field(
+          grid,
+          "Robots / indeksacja",
+          "robots.txt: User-agent: *; Allow: /. Brak noindex w kodzie; rzeczywista indeksacja i blokady serwera nieznane.",
+          "review",
+          "Nie mylić pozwolenia crawlerom z gwarancją zaindeksowania.",
+        );
+        report.append(grid);
+        const heading = element(
+          "h3",
+          `Obrazy tego widoku: ${page.images.length} użyć`,
+        );
+        report.append(
+          heading,
+          element(
+            "p",
+            "Zestawienie obejmuje ikony strony, obrazy treści i tła CSS tam, gdzie występują. Powtórzony plik (np. logo) ma różne użycia, ale nie oznacza odrębnego pliku.",
+            "muted",
+          ),
+        );
+        if (page.images.length) report.append(table(page.images));
+        else
+          report.append(
+            element(
+              "p",
+              "Brak obrazów w dokumencie kwestionariusza.",
+              "badge na",
+            ),
+          );
+        const advice = element("section", undefined, "note");
+        advice.append(element("h3", "Obserwacje i wskazówki"));
+        const list = element("ul");
+        for (const note of page.notes) list.append(element("li", note));
+        advice.append(list);
+        report.append(advice);
+      }
+      select(0);
+    </script>
+  </body>
+</html>

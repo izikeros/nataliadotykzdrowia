@@ -51,9 +51,9 @@ images-optimize: minify ## Generate WebP/AVIF copies in docs/, then audit them
 	@$(PYTHON) optimize_images.py
 	@$(PYTHON) image_audit.py --max-dimension $(MAX_IMAGE_DIMENSION) --max-file-bytes $(MAX_IMAGE_BYTES) --max-total-bytes $(MAX_IMAGE_TOTAL_BYTES)
 
-github-pages: format-check ## Create validated GitHub Pages project-site output in docs/
-	@$(PYTHON) build.py --minify --base-path /nataliadotykzdrowia/
-	@$(PYTHON) check.py --base-path /nataliadotykzdrowia/
+github-pages: format-check ## Create validated GitHub Pages output for nataliadotykzdrowia.pl in docs/
+	@$(PYTHON) build.py --minify
+	@$(PYTHON) check.py
 	@node --check assets/js/site.js
 	@$(PYTHON) image_audit.py --max-dimension $(MAX_IMAGE_DIMENSION) --max-file-bytes $(MAX_IMAGE_BYTES) --max-total-bytes $(MAX_IMAGE_TOTAL_BYTES)
 

@@ -10,6 +10,7 @@ import re
 
 ROOT = Path(__file__).parent
 OUT = ROOT / "docs"
+DOMAIN = "nataliadotykzdrowia.pl"
 WORDPRESS = ROOT.parent / "dotykzdrowia_wordpress"
 MISC = WORDPRESS / "misc"
 UPLOADS = WORDPRESS / "wp-content" / "uploads"
@@ -268,6 +269,8 @@ def main(minify=False, base_path="/"):
     rules, rules_title = legal_page("Regulamin_Newslettera.html", "Regulamin newslettera")
     write("polityka-prywatnosci", privacy_title, "Polityka prywatności Dotyku Zdrowia.", privacy, minify, base_path)
     write("regulamin-newslettera", rules_title, "Regulamin newslettera Dotyku Zdrowia.", rules, minify, base_path)
+    (OUT / "CNAME").write_text(f"{DOMAIN}\n", encoding="utf-8")
+    (OUT / ".nojekyll").write_text("", encoding="utf-8")
     (OUT / "robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: https://nataliadotykzdrowia.pl/sitemap.xml\n", encoding="utf-8")
     (OUT / "sitemap.xml").write_text("""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">""" + "".join(

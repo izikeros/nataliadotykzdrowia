@@ -8,6 +8,7 @@ import sys
 
 ROOT = Path(__file__).parent
 DIST = ROOT / "docs"
+DOMAIN = "nataliadotykzdrowia.pl"
 ROUTES = ("", "oferta", "o-mnie", "opinie", "polityka-prywatnosci", "regulamin-newslettera")
 EXPECTED_TESTIMONIALS = {"": 7, "opinie": 32}
 HOME_OFFER_LINKS = (
@@ -122,9 +123,12 @@ def main(base_path="/"):
         prefixed_url = f"{base_path}{url.lstrip('/')}"
         if prefixed_url not in css:
             errors.append(f"docs/assets/css/site.css: missing local target {prefixed_url}")
-    for file in ("robots.txt", "sitemap.xml"):
+    for file in ("robots.txt", "sitemap.xml", ".nojekyll"):
         if not (DIST / file).is_file():
             errors.append(f"Missing {file}")
+    cname = DIST / "CNAME"
+    if not cname.is_file() or cname.read_text(encoding="utf-8").strip() != DOMAIN:
+        errors.append(f"docs/CNAME: expected custom domain {DOMAIN}")
     for filename, markers in STANDALONE_PAGES.items():
         page = DIST / filename
         if not page.is_file():

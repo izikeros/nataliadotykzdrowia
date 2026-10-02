@@ -1,4 +1,6 @@
 (() => {
+  // Disabled until the pop-up is integrated with MailerLite.
+  const NEWSLETTER_POPUP_ENABLED = false;
   const storage = window.localStorage;
   const consent = document.querySelector("[data-consent]");
   const newsletter = document.querySelector("[data-newsletter]");
@@ -12,7 +14,12 @@
     if (choice === "all") scheduleNewsletter();
   };
   const scheduleNewsletter = () => {
-    if (storage.getItem("dz-newsletter-dismissed") || !newsletter) return;
+    if (
+      !NEWSLETTER_POPUP_ENABLED ||
+      storage.getItem("dz-newsletter-dismissed") ||
+      !newsletter
+    )
+      return;
     window.setTimeout(() => newsletter.showModal(), 30000);
   };
 

@@ -7,7 +7,6 @@ import subprocess
 import sys
 
 IMAGE_SUFFIXES = {".avif", ".jpeg", ".jpg", ".png", ".webp"}
-ACTIVE_SUFFIXES = {".jpeg", ".jpg", ".png"}
 
 
 def dimensions(image):
@@ -27,7 +26,7 @@ def dimensions(image):
 
 def main():
     parser = ArgumentParser(description=__doc__)
-    parser.add_argument("--directory", type=Path, default=Path("docs/assets/images"))
+    parser.add_argument("--directory", type=Path, default=Path("docs/assets/img"))
     parser.add_argument("--max-dimension", type=int, default=2560)
     parser.add_argument("--max-file-bytes", type=int, default=2621440)
     parser.add_argument("--max-total-bytes", type=int, default=8388608)
@@ -43,8 +42,7 @@ def main():
     print("-" * 62)
     for image in images:
         size = image.stat().st_size
-        if image.suffix.lower() in ACTIVE_SUFFIXES:
-            total += size
+        total += size
         try:
             width, height = dimensions(image)
         except (KeyError, subprocess.CalledProcessError) as error:
@@ -61,7 +59,7 @@ def main():
             )
     print("-" * 62)
     print(
-        f"{len(images)} image files; active-format total {total / 1024 / 1024:.2f} MiB"
+        f"{len(images)} image files; total {total / 1024 / 1024:.2f} MiB"
     )
     if total > args.max_total_bytes:
         failures.append(f"total: {total} bytes exceeds {args.max_total_bytes} bytes budget")

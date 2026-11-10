@@ -4,25 +4,24 @@
 import argparse
 from html.parser import HTMLParser
 from pathlib import Path
+import re
 import sys
 
 ROOT = Path(__file__).parent
 DIST = ROOT / "docs"
 DOMAIN = "nataliadotykzdrowia.pl"
-ROUTES = ("", "oferta", "o-mnie", "opinie", "polityka-prywatnosci", "regulamin-newslettera")
-EXPECTED_TESTIMONIALS = {"": 7, "opinie": 32}
-HOME_OFFER_LINKS = (
-    (
-        "/oferta/#terapia-holistyczna",
-        "Holistyczna terapia naturalna w gabinecie we Wrocławiu",
-    ),
-    ("/oferta/#online", "Holistyczna współpraca indywidualna online"),
+ROUTES = (
+    "",
+    "o-mnie",
+    "opinie",
+    "analiza-zdrowia",
+    "droga-do-rownowagi",
+    "wspolpraca-online",
+    "kurs-online",
+    "polityka-prywatnosci",
+    "regulamin-newslettera",
 )
-CSS_LOCAL_URLS = (
-    "/assets/images/tlo.png",
-    "/assets/images/markus-spiske-IKvDKHWF_5w-unsplash-scaled.jpg",
-    "/assets/images/tlo2.png",
-)
+REDIRECTS = {"oferta": "/droga-do-rownowagi/"}
 STANDALONE_PAGES = {
     "analiza.html": (
         "Kwestionariusz Analizy sygnałów ciała",
@@ -37,10 +36,14 @@ class PageAudit(HTMLParser):
         super().__init__()
         self.doctypes = 0
         self.tags = []
+        self.ids = set()
         self.local_urls = []
         self.title = False
         self.lang = False
-        self.testimonials = 0
+        self.description = False
+        self.canonical = None
+        self.icon = False
+        self.refresh = None
 
     def handle_decl(self, decl):
         if decl.lower() == "doctype html":
@@ -49,13 +52,31 @@ class PageAudit(HTMLParser):
     def handle_starttag(self, tag, attrs):
         self.tags.append(tag)
         attributes = dict(attrs)
+        if "id" in attributes:
+            self.ids.add(attributes["id"])
         self.title |= tag == "title"
         self.lang |= tag == "html" and attributes.get("lang") == "pl"
-        self.testimonials += tag == "img" and attributes.get("alt") == "Opinia klientki"
+        if tag == "meta":
+            self.description |= attributes.get("name") == "description" and bool(attributes.get("content"))
+            if attributes.get("http-equiv") == "refresh":
+                self.refresh = attributes.get("content", "").partition("url=")[2]
+        if tag == "link":
+            rel = attributes.get("rel")
+            if rel == "canonical":
+                self.canonical = attributes.get("href")
+            self.icon |= rel == "icon"
         for attribute in ("href", "src"):
             value = attributes.get(attribute)
-            if value and value.startswith("/"):
-                self.local_urls.append(value.partition("#")[0].partition("?")[0])
+            if value and value.startswith("/") and not value.startswith("//"):
+                self.local_urls.append(value.partition("?")[0])
+        style = attributes.get("style") or ""
+        self.local_urls += re.findall(r"""url\(\s*["']?(/[^/"')][^"')]*)""", style)
+
+
+def audit(page):
+    result = PageAudit()
+    result.feed(page.read_text(encoding="utf-8"))
+    return result
 
 
 def normalize_base_path(base_path):
@@ -68,64 +89,81 @@ def resolve_local_url(url, base_path):
     if not url.startswith(base_path):
         return None
     url = "/" + url.removeprefix(base_path)
-    if url.startswith("/assets/"):
+    if url.startswith("/assets/") or url.endswith(".html"):
         return DIST / url.lstrip("/")
     return DIST / url.lstrip("/") / "index.html"
+
+
+def check_basics(page, result, errors):
+    name = page.relative_to(ROOT)
+    if result.doctypes != 1:
+        errors.append(f"{name}: expected one HTML5 doctype")
+    for required in ("html", "head", "body"):
+        if required not in result.tags:
+            errors.append(f"{name}: missing <{required}>")
+    if not result.lang:
+        errors.append(f"{name}: missing lang=pl")
+    if not result.title:
+        errors.append(f"{name}: missing <title>")
+
+
+def check_local_urls(name, urls, base_path, errors, audits):
+    for url in urls:
+        path, _, fragment = url.partition("#")
+        target = resolve_local_url(path, base_path)
+        if target is None:
+            errors.append(f"{name}: local URL does not use base path {base_path}: {url}")
+        elif not target.exists():
+            errors.append(f"{name}: missing local target {url}")
+        elif fragment and target.suffix == ".html":
+            if target not in audits:
+                audits[target] = audit(target).ids
+            if fragment not in audits[target]:
+                errors.append(f"{name}: missing fragment target {url}")
 
 
 def main(base_path="/"):
     base_path = normalize_base_path(base_path)
     errors = []
+    ids_cache = {}
     for route in ROUTES:
         page = DIST / route / "index.html"
         if not page.is_file():
             errors.append(f"Missing route output: {page.relative_to(ROOT)}")
             continue
-        audit = PageAudit()
-        audit.feed(page.read_text(encoding="utf-8"))
-        if audit.doctypes != 1:
-            errors.append(f"{page.relative_to(ROOT)}: expected one HTML5 doctype")
-        for required in ("html", "head", "body", "main"):
-            if required not in audit.tags:
-                errors.append(f"{page.relative_to(ROOT)}: missing <{required}>")
-        if not audit.lang:
-            errors.append(f"{page.relative_to(ROOT)}: missing lang=pl")
-        if not audit.title:
-            errors.append(f"{page.relative_to(ROOT)}: missing <title>")
-        document = page.read_text(encoding="utf-8")
-        if route == "":
-            for href, label in HOME_OFFER_LINKS:
-                prefixed_href = f"{base_path}{href.lstrip('/')}"
-                if f'href="{prefixed_href}"' not in document or label not in document:
-                    errors.append(f"{page.relative_to(ROOT)}: missing linked production offer title")
-        if "Copyright 2026 Natalia Safjan" not in document:
-            errors.append(f"{page.relative_to(ROOT)}: missing production copyright")
-        if "Iron Box" in document:
-            errors.append(f"{page.relative_to(ROOT)}: obsolete design credit")
-        if 'class="scroll-top"' not in document:
-            errors.append(f"{page.relative_to(ROOT)}: missing scroll-to-top control")
-        expected_testimonials = EXPECTED_TESTIMONIALS.get(route)
-        if expected_testimonials is not None and audit.testimonials != expected_testimonials:
-            errors.append(
-                f"{page.relative_to(ROOT)}: expected {expected_testimonials} testimonial "
-                f"images, found {audit.testimonials}"
-            )
-        for url in audit.local_urls:
-            target = resolve_local_url(url, base_path)
-            if target is None:
-                errors.append(
-                    f"{page.relative_to(ROOT)}: local URL does not use base path {base_path}: {url}"
-                )
-            elif not target.exists():
-                errors.append(f"{page.relative_to(ROOT)}: missing local target {url}")
-    css = (DIST / "assets" / "css" / "site.css").read_text(encoding="utf-8")
-    for url in CSS_LOCAL_URLS:
-        prefixed_url = f"{base_path}{url.lstrip('/')}"
-        if prefixed_url not in css:
-            errors.append(f"docs/assets/css/site.css: missing local target {prefixed_url}")
+        result = audit(page)
+        check_basics(page, result, errors)
+        name = page.relative_to(ROOT)
+        if not result.description:
+            errors.append(f"{name}: missing meta description")
+        expected = f"https://{DOMAIN}/{route}{'/' if route else ''}"
+        if result.canonical != expected:
+            errors.append(f"{name}: canonical {result.canonical!r}, expected {expected}")
+        if not result.icon:
+            errors.append(f"{name}: missing favicon link")
+        check_local_urls(name, result.local_urls, base_path, errors, ids_cache)
+    for route, target in REDIRECTS.items():
+        page = DIST / route / "index.html"
+        if not page.is_file():
+            errors.append(f"Missing redirect output: {page.relative_to(ROOT)}")
+            continue
+        result = audit(page)
+        name = page.relative_to(ROOT)
+        expected = f"{base_path}{target.lstrip('/')}"
+        if result.refresh != expected:
+            errors.append(f"{name}: redirect target {result.refresh!r}, expected {expected}")
+        check_local_urls(name, result.local_urls, base_path, errors, ids_cache)
+    for stylesheet in sorted((DIST / "assets").glob("*.css")):
+        urls = re.findall(r"""url\(\s*["']?(/[^/"')][^"')]*)""", stylesheet.read_text(encoding="utf-8"))
+        check_local_urls(stylesheet.relative_to(ROOT), urls, base_path, errors, ids_cache)
     for file in ("robots.txt", "sitemap.xml", ".nojekyll"):
         if not (DIST / file).is_file():
             errors.append(f"Missing {file}")
+    sitemap = (DIST / "sitemap.xml").read_text(encoding="utf-8") if (DIST / "sitemap.xml").is_file() else ""
+    listed = set(re.findall(r"<loc>https://" + re.escape(DOMAIN) + r"(/[^<]*)</loc>", sitemap))
+    expected_listed = {f"/{route}{'/' if route else ''}" for route in ROUTES}
+    if listed != expected_listed:
+        errors.append(f"docs/sitemap.xml: expected {sorted(expected_listed)}, found {sorted(listed)}")
     cname = DIST / "CNAME"
     if not cname.is_file() or cname.read_text(encoding="utf-8").strip() != DOMAIN:
         errors.append(f"docs/CNAME: expected custom domain {DOMAIN}")
@@ -134,15 +172,8 @@ def main(base_path="/"):
         if not page.is_file():
             errors.append(f"Missing standalone page output: {page.relative_to(ROOT)}")
             continue
+        check_basics(page, audit(page), errors)
         document = page.read_text(encoding="utf-8")
-        audit = PageAudit()
-        audit.feed(document)
-        if audit.doctypes != 1:
-            errors.append(f"{page.relative_to(ROOT)}: expected one HTML5 doctype")
-        if not audit.lang:
-            errors.append(f"{page.relative_to(ROOT)}: missing lang=pl")
-        if not audit.title:
-            errors.append(f"{page.relative_to(ROOT)}: missing <title>")
         for marker in markers:
             if marker not in document:
                 errors.append(f"{page.relative_to(ROOT)}: missing expected content {marker}")

@@ -1,0 +1,59 @@
+/* Legal pages: articles imported from ../dotykzdrowia_wordpress/misc/ */
+.legal {
+  padding-top: 40px;
+}
+.legal article {
+  max-width: 860px;
+  margin: 0 auto;
+}
+.legal article header {
+  margin-bottom: 40px;
+}
+.legal article header h1 {
+  margin-bottom: 20px;
+}
+.legal article section {
+  margin-bottom: 32px;
+}
+.legal article h2 {
+  margin: 28px 0 14px;
+  font-size: clamp(22px, 3vw, 28px);
+}
+.legal article h3 {
+  margin: 20px 0 10px;
+  font-size: 18px;
+}
+.legal article p {
+  margin-bottom: 14px;
+}
+.legal article ul,
+.legal article ol {
+  margin: 0 0 14px;
+  padding-left: 28px;
+}
+.legal article li {
+  margin-bottom: 8px;
+}
+.legal article ul ul,
+.legal article ol ol {
+  margin-top: 8px;
+}
+.legal article dl {
+  margin: 0 0 14px 20px;
+}
+.legal article dt {
+  display: inline;
+  font-weight: 600;
+  color: var(--ink);
+}
+.legal article dt::after {
+  content: " – ";
+}
+.legal article dd {
+  display: inline;
+  margin: 0;
+}
+.legal article dd::after {
+  content: "\A";
+  white-space: pre;
+}
